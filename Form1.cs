@@ -74,6 +74,12 @@ namespace AppResizer
         public static extern long GetWindowRect(int hWnd, ref Rectangle lpRect);
 
         [DllImport("user32.dll")]
+        public static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out uint ProcessId);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
@@ -178,73 +184,72 @@ namespace AppResizer
         {
             while (true)
             {
+                Thread.Sleep(500);
+
                 // Get the current process.
-                Process[] ProcessesList = getProcessList();
+                Process CurrentProcess = getForegroundProcess();
                 
-                foreach (Process proc_i in ProcessesList) {
+                if (String.IsNullOrEmpty(CurrentProcess.MainWindowTitle) || CurrentProcess.ProcessName == "Taskmgr")
+                    continue;
+                if (CurrentProcess.HasExited)
+                    continue;
 
-                    if (proc_i.HasExited)
-                        continue;
-
-                    // Additional data only if not previously exists
-                    if (!ProcAdditionalDataList.ContainsKey(proc_i.MainWindowHandle))
-                        ProcAdditionalDataList.Add(proc_i.MainWindowHandle, new ProcessAdditionalData());
+                // Additional data only if not previously exists
+                if (!ProcAdditionalDataList.ContainsKey(CurrentProcess.MainWindowHandle))
+                    ProcAdditionalDataList.Add(CurrentProcess.MainWindowHandle, new ProcessAdditionalData());
                     
-                    // Change sizes for the new windows, which saved before as Profiles in INI file
-                    if (!ProcAdditionalDataList[proc_i.MainWindowHandle].alreadyStarted 
-                        && SavedAppsData.ContainsKey(proc_i.MainModule.FileName))
-                    {
-                        if (ProcAdditionalDataList[proc_i.MainWindowHandle].delayStartingResizeLeft == -999) {
-                            ProcAdditionalDataList[proc_i.MainWindowHandle].delayStartingResizeLeft =
-                                SavedAppsData[proc_i.MainModule.FileName].delayStartingResize - 500; // Init Delay to First auto resize
-                        }
-                        else if (ProcAdditionalDataList[proc_i.MainWindowHandle].delayStartingResizeLeft > 0) {
-                            ProcAdditionalDataList[proc_i.MainWindowHandle].delayStartingResizeLeft -= 500; // Decrease delay
-                        }
-                        // Do nothing, if window not minimized
-                        else if (windowModeStatus(proc_i.MainWindowHandle) != WndMode.Minimized)
-                        {
-                            // If time to Starting resize come
-                            SetWindowSize(proc_i.MainWindowHandle,
-                                SavedAppsData[proc_i.MainModule.FileName].startingWidth + SavedAppsData[proc_i.MainModule.FileName].borderLeft
-                                    + SavedAppsData[proc_i.MainModule.FileName].borderRight,
-                                SavedAppsData[proc_i.MainModule.FileName].startingHeight + SavedAppsData[proc_i.MainModule.FileName].borderTop
-                                    + SavedAppsData[proc_i.MainModule.FileName].borderBottom);
-
-                            // Update sizes in programm also, if window currently selected
-                            if (lastSelectedWindowNode > -1 && lastSelectedWindowNode < ProcList.Length
-                                && !ProcList[lastSelectedWindowNode].HasExited
-                                && ProcList[lastSelectedWindowNode].MainModule.FileName == proc_i.MainModule.FileName)
-                            {
-                                Invoke(new Action(() => {
-                                    numericUpDown_BorderTop.Value = SavedAppsData[proc_i.MainModule.FileName].borderTop;
-                                    numericUpDown_BorderRight.Value = SavedAppsData[proc_i.MainModule.FileName].borderRight;
-                                    numericUpDown_BorderBot.Value = SavedAppsData[proc_i.MainModule.FileName].borderBottom;
-                                    numericUpDown_BorderLeft.Value = SavedAppsData[proc_i.MainModule.FileName].borderLeft;
-                                    numericUpDown_ResolutionW.Value = SavedAppsData[proc_i.MainModule.FileName].startingWidth;
-                                    numericUpDown_ResolutionH.Value = SavedAppsData[proc_i.MainModule.FileName].startingHeight;
-                                }));
-                            }
-
-                            ProcAdditionalDataList[proc_i.MainWindowHandle].alreadyStarted = true;
-                        }
+                // Change sizes for the new windows, which saved before as Profiles in INI file
+                if (!ProcAdditionalDataList[CurrentProcess.MainWindowHandle].alreadyStarted 
+                    && SavedAppsData.ContainsKey(CurrentProcess.MainModule.FileName))
+                {
+                    if (ProcAdditionalDataList[CurrentProcess.MainWindowHandle].delayStartingResizeLeft == -999) {
+                        ProcAdditionalDataList[CurrentProcess.MainWindowHandle].delayStartingResizeLeft =
+                            SavedAppsData[CurrentProcess.MainModule.FileName].delayStartingResize - 500; // Init Delay to First auto resize
                     }
+                    else if (ProcAdditionalDataList[CurrentProcess.MainWindowHandle].delayStartingResizeLeft > 0) {
+                        ProcAdditionalDataList[CurrentProcess.MainWindowHandle].delayStartingResizeLeft -= 500; // Decrease delay
+                    }
+                    // Do nothing, if window not minimized
+                    else if (windowModeStatus(CurrentProcess.MainWindowHandle) != WndMode.Minimized)
+                    {
+                        // If time to Starting resize come
+                        SetWindowSize(CurrentProcess.MainWindowHandle,
+                            SavedAppsData[CurrentProcess.MainModule.FileName].startingWidth + SavedAppsData[CurrentProcess.MainModule.FileName].borderLeft
+                                + SavedAppsData[CurrentProcess.MainModule.FileName].borderRight,
+                            SavedAppsData[CurrentProcess.MainModule.FileName].startingHeight + SavedAppsData[CurrentProcess.MainModule.FileName].borderTop
+                                + SavedAppsData[CurrentProcess.MainModule.FileName].borderBottom);
 
-                    // Update window size info, if currently selected
-                    if (this.WindowState != FormWindowState.Minimized 
-                            && lastSelectedWindowNode > -1 && lastSelectedWindowNode < ProcList.Length
+                        // Update sizes in programm also, if window currently selected
+                        if (lastSelectedWindowNode > -1 && lastSelectedWindowNode < ProcList.Length
                             && !ProcList[lastSelectedWindowNode].HasExited
-                            && ProcList[lastSelectedWindowNode].MainModule.FileName == proc_i.MainModule.FileName) {
-                        WndSizes wndSizes = new WndSizes();
-                        getWndSizes(proc_i.MainWindowHandle, ref wndSizes);
-                        Invoke(new Action(() => {
-                            label_SizeW.Text = (wndSizes.Width - numericUpDown_BorderRight.Value - numericUpDown_BorderLeft.Value).ToString();
-                            label_SizeH.Text = (wndSizes.Height - numericUpDown_BorderTop.Value - numericUpDown_BorderBot.Value).ToString();
-                        }));
+                            && ProcList[lastSelectedWindowNode].MainModule.FileName == CurrentProcess.MainModule.FileName)
+                        {
+                            Invoke(new Action(() => {
+                                numericUpDown_BorderTop.Value = SavedAppsData[CurrentProcess.MainModule.FileName].borderTop;
+                                numericUpDown_BorderRight.Value = SavedAppsData[CurrentProcess.MainModule.FileName].borderRight;
+                                numericUpDown_BorderBot.Value = SavedAppsData[CurrentProcess.MainModule.FileName].borderBottom;
+                                numericUpDown_BorderLeft.Value = SavedAppsData[CurrentProcess.MainModule.FileName].borderLeft;
+                                numericUpDown_ResolutionW.Value = SavedAppsData[CurrentProcess.MainModule.FileName].startingWidth;
+                                numericUpDown_ResolutionH.Value = SavedAppsData[CurrentProcess.MainModule.FileName].startingHeight;
+                            }));
+                        }
+
+                        ProcAdditionalDataList[CurrentProcess.MainWindowHandle].alreadyStarted = true;
                     }
                 }
 
-                Thread.Sleep(500);
+                // Update window size info, if currently selected
+                if (this.WindowState != FormWindowState.Minimized 
+                        && lastSelectedWindowNode > -1 && lastSelectedWindowNode < ProcList.Length
+                        && !ProcList[lastSelectedWindowNode].HasExited
+                        && ProcList[lastSelectedWindowNode].MainModule.FileName == CurrentProcess.MainModule.FileName) {
+                    WndSizes wndSizes = new WndSizes();
+                    getWndSizes(CurrentProcess.MainWindowHandle, ref wndSizes);
+                    Invoke(new Action(() => {
+                        label_SizeW.Text = (wndSizes.Width - numericUpDown_BorderRight.Value - numericUpDown_BorderLeft.Value).ToString();
+                        label_SizeH.Text = (wndSizes.Height - numericUpDown_BorderTop.Value - numericUpDown_BorderBot.Value).ToString();
+                    }));
+                }
             }
         }
         
@@ -258,8 +263,15 @@ namespace AppResizer
             listBox_Windows.Items.Clear();
             for (int proc_i = 0; proc_i < ProcList.Length; proc_i++)
             {
+                if (String.IsNullOrEmpty(ProcList[proc_i].MainWindowTitle))
+                    continue;
+
                 listBox_Windows.Items.Add(ProcList[proc_i].MainWindowTitle.Length > 33 ? ProcList[proc_i].MainWindowTitle.Substring(0, 30) + "..." 
                     : ProcList[proc_i].MainWindowTitle);
+
+                // Additional data only if not previously exists
+                if (!ProcAdditionalDataList.ContainsKey(ProcList[proc_i].MainWindowHandle))
+                    ProcAdditionalDataList.Add(ProcList[proc_i].MainWindowHandle, new ProcessAdditionalData());
 
                 if (lastSelectedWindowProcId == (int)ProcList[proc_i].MainWindowHandle)
                     listBox_Windows.SelectedIndex = proc_i;
@@ -267,17 +279,23 @@ namespace AppResizer
         }
 
         public Process[] getProcessList(){
-            // Get the current process.
-            Process currentProcess = Process.GetCurrentProcess();
             // Get all processes running on the local computer.
             Process[] localAll = Process.GetProcesses();
-            IEnumerable<Process> localAll2 = localAll.Where(proc => !String.IsNullOrEmpty(proc.MainWindowTitle));
+            Process[] localAll2 = Array.FindAll(localAll, proc => (!String.IsNullOrEmpty(proc.MainWindowTitle) && proc.ProcessName != "Taskmgr"));
             try {
                 return localAll2.OrderByDescending(proc => proc.StartTime).ToArray();
             }
             catch (InvalidOperationException e) {
                 return new Process[0];
             }
+        }
+
+        public Process getForegroundProcess() {
+            IntPtr hwnd = GetForegroundWindow();
+            uint pid;
+            GetWindowThreadProcessId(hwnd, out pid);
+            Process p = Process.GetProcessById((int)pid);
+            return Process.GetProcessById((int)pid);
         }
 
         public void getSettigns() {
@@ -437,7 +455,7 @@ namespace AppResizer
                     numericUpDown_BorderRight.Value         = SavedAppsData[ currProc.MainModule.FileName ].borderRight;
                     numericUpDown_BorderBot.Value           = SavedAppsData[ currProc.MainModule.FileName ].borderBottom;
                     numericUpDown_BorderLeft.Value          = SavedAppsData[ currProc.MainModule.FileName ].borderLeft;
-                    numericUpDown_DelayStartResize.Value    = SavedAppsData[ currProc.MainModule.FileName ].delayStartingResize/1000;
+                    numericUpDown_DelayStartResize.Value    = (decimal)SavedAppsData[ currProc.MainModule.FileName ].delayStartingResize / 1000;
                     label_HaveProfile.Visible = true;
                 }
                 else {
@@ -526,7 +544,7 @@ namespace AppResizer
                 SavedAppsData[profileFilePath].borderLeft =             (int)numericUpDown_BorderLeft.Value;
                 SavedAppsData[profileFilePath].startingWidth =          int.Parse(label_SizeW.Text);
                 SavedAppsData[profileFilePath].startingHeight =         int.Parse(label_SizeH.Text);
-                SavedAppsData[profileFilePath].delayStartingResize =    (int)numericUpDown_DelayStartResize.Value;
+                SavedAppsData[profileFilePath].delayStartingResize =    (int)(numericUpDown_DelayStartResize.Value * 1000);
 
                 // No need in correcting size of selected window
                 ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = true;
