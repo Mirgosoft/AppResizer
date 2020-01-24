@@ -1,0 +1,5 @@
+
+.gitattributes
+.vs/
+[Bb]in/
+[Oo]bj/
