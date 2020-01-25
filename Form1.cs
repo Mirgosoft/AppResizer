@@ -157,28 +157,17 @@ namespace AppResizer
         public Form1() { InitializeComponent(); }
         private void Form1_Shown(object sender, EventArgs e)
         {
+            notifyIcon.ContextMenuStrip = contextMenuStrip_Tray;
+
             getSettigns();
-
-
+            
             updateProcessList();
 
             // Start Thread
             Tread_Update = new Thread(Tread_Update_func);
             Tread_Update.Start();
 
-
-
-            /*Form test = new Form();
-            test.AllowTransparency = true;
-            test.BackColor = Color.Black;
-            test.TransparencyKey = Color.Pink;
-            test.StartPosition = FormStartPosition.Manual;
-            test.Location = new Point(0,0);
-            test.Width = SystemInformation.VirtualScreen.Width;
-            test.Height = SystemInformation.VirtualScreen.Height;
-            test.FormBorderStyle = FormBorderStyle.None;
-            //test.Show();
-            test.Click += borderSelectorClick;*/
+            
         }
         public void Tread_Update_func()
         {
@@ -832,12 +821,20 @@ namespace AppResizer
             }
         }
         
-        // Maximize from Tray
+        
         private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
-            Show();
-            this.WindowState = FormWindowState.Normal;
-            notifyIcon.Visible = false;
+            if (e.Button == MouseButtons.Left) { // Maximize from Tray
+                Show();
+                this.WindowState = FormWindowState.Normal;
+                notifyIcon.Visible = false;
+            }
+        }
+
+        private void toolStripMenuItem_Exit_Click(object sender, EventArgs e)
+        {
+            notifyIcon.Dispose();
+            Application.Exit();
         }
     }
 }

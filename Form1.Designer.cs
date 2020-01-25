@@ -70,6 +70,8 @@
             this.label9 = new System.Windows.Forms.Label();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.label_HaveProfile = new System.Windows.Forms.Label();
+            this.contextMenuStrip_Tray = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem_Exit = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderTop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderRight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderBot)).BeginInit();
@@ -81,6 +83,7 @@
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_DelayStartResize)).BeginInit();
+            this.contextMenuStrip_Tray.SuspendLayout();
             this.SuspendLayout();
             // 
             // label_ProcPath
@@ -596,6 +599,20 @@
             this.label_HaveProfile.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.label_HaveProfile.Visible = false;
             // 
+            // contextMenuStrip_Tray
+            // 
+            this.contextMenuStrip_Tray.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem_Exit});
+            this.contextMenuStrip_Tray.Name = "contextMenuStrip_Tray";
+            this.contextMenuStrip_Tray.Size = new System.Drawing.Size(181, 48);
+            // 
+            // toolStripMenuItem_Exit
+            // 
+            this.toolStripMenuItem_Exit.Name = "toolStripMenuItem_Exit";
+            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem_Exit.Text = "Exit";
+            this.toolStripMenuItem_Exit.Click += new System.EventHandler(this.toolStripMenuItem_Exit_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -640,6 +657,7 @@
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_DelayStartResize)).EndInit();
+            this.contextMenuStrip_Tray.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -687,6 +705,8 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.Label label_HaveProfile;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip_Tray;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_Exit;
     }
 }
 
