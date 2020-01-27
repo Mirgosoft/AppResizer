@@ -178,7 +178,7 @@ namespace AppResizer
                 // Get the current process.
                 Process CurrentProcess = getForegroundProcess();
                 
-                if (String.IsNullOrEmpty(CurrentProcess.MainWindowTitle) || CurrentProcess.ProcessName == "Taskmgr")
+                if (String.IsNullOrEmpty(CurrentProcess.MainWindowTitle))
                     continue;
                 if (CurrentProcess.HasExited)
                     continue;
