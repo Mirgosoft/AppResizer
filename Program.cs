@@ -21,7 +21,7 @@ namespace AppResizer
             currentDomain.UnhandledException += GlobalUnhandledExceptionHandler;
             // Handler for exceptions in threads behind forms.
             System.Windows.Forms.Application.ThreadException += GlobalThreadExceptionHandler;
-
+            
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -29,6 +29,7 @@ namespace AppResizer
         }
 
 
+        // Detect Errors --------------------------------------------------------------------------
         private static void GlobalUnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = default(Exception);
@@ -44,7 +45,8 @@ namespace AppResizer
             MessageBox.Show("Error: " + ex.Message + "\n\n-------------\n\n" + ex.StackTrace, "Application Resizer Crashed =(");
             Application.Exit();
         }
-
+        // -----------------------------------------------------------------------------------------
+        
 
     }
 }

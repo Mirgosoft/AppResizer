@@ -72,6 +72,7 @@
             this.label_HaveProfile = new System.Windows.Forms.Label();
             this.contextMenuStrip_Tray = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem_Exit = new System.Windows.Forms.ToolStripMenuItem();
+            this.button_RemoveProfile = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderTop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderRight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderBot)).BeginInit();
@@ -126,7 +127,7 @@
             this.listBox_Windows.ItemHeight = 18;
             this.listBox_Windows.Items.AddRange(new object[] {
             "Windows list..."});
-            this.listBox_Windows.Location = new System.Drawing.Point(8, 43);
+            this.listBox_Windows.Location = new System.Drawing.Point(8, 44);
             this.listBox_Windows.Name = "listBox_Windows";
             this.listBox_Windows.Size = new System.Drawing.Size(299, 166);
             this.listBox_Windows.TabIndex = 5;
@@ -512,7 +513,7 @@
             // 
             // button_HelpInfoRU
             // 
-            this.button_HelpInfoRU.Font = new System.Drawing.Font("Droid Sans", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_HelpInfoRU.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_HelpInfoRU.Location = new System.Drawing.Point(7, 22);
             this.button_HelpInfoRU.Name = "button_HelpInfoRU";
             this.button_HelpInfoRU.Size = new System.Drawing.Size(46, 20);
@@ -523,7 +524,7 @@
             // 
             // button_HelpInfoEN
             // 
-            this.button_HelpInfoEN.Font = new System.Drawing.Font("Droid Sans", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_HelpInfoEN.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button_HelpInfoEN.Location = new System.Drawing.Point(7, 3);
             this.button_HelpInfoEN.Name = "button_HelpInfoEN";
             this.button_HelpInfoEN.Size = new System.Drawing.Size(46, 20);
@@ -591,7 +592,7 @@
             this.label_HaveProfile.BackColor = System.Drawing.Color.Yellow;
             this.label_HaveProfile.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_HaveProfile.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(190)))), ((int)(((byte)(22)))));
-            this.label_HaveProfile.Location = new System.Drawing.Point(336, 161);
+            this.label_HaveProfile.Location = new System.Drawing.Point(328, 161);
             this.label_HaveProfile.Name = "label_HaveProfile";
             this.label_HaveProfile.Size = new System.Drawing.Size(135, 19);
             this.label_HaveProfile.TabIndex = 37;
@@ -604,20 +605,34 @@
             this.contextMenuStrip_Tray.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem_Exit});
             this.contextMenuStrip_Tray.Name = "contextMenuStrip_Tray";
-            this.contextMenuStrip_Tray.Size = new System.Drawing.Size(181, 48);
+            this.contextMenuStrip_Tray.Size = new System.Drawing.Size(94, 26);
             // 
             // toolStripMenuItem_Exit
             // 
             this.toolStripMenuItem_Exit.Name = "toolStripMenuItem_Exit";
-            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem_Exit.Size = new System.Drawing.Size(93, 22);
             this.toolStripMenuItem_Exit.Text = "Exit";
             this.toolStripMenuItem_Exit.Click += new System.EventHandler(this.toolStripMenuItem_Exit_Click);
+            // 
+            // button_RemoveProfile
+            // 
+            this.button_RemoveProfile.BackColor = System.Drawing.Color.Red;
+            this.button_RemoveProfile.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button_RemoveProfile.Location = new System.Drawing.Point(461, 158);
+            this.button_RemoveProfile.Name = "button_RemoveProfile";
+            this.button_RemoveProfile.Size = new System.Drawing.Size(20, 24);
+            this.button_RemoveProfile.TabIndex = 38;
+            this.button_RemoveProfile.Text = "X";
+            this.button_RemoveProfile.UseVisualStyleBackColor = false;
+            this.button_RemoveProfile.Visible = false;
+            this.button_RemoveProfile.Click += new System.EventHandler(this.button_RemoveProfile_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 218);
+            this.ClientSize = new System.Drawing.Size(800, 217);
+            this.Controls.Add(this.button_RemoveProfile);
             this.Controls.Add(this.label_HaveProfile);
             this.Controls.Add(this.label_CursorPos);
             this.Controls.Add(this.label9);
@@ -707,6 +722,7 @@
         private System.Windows.Forms.Label label_HaveProfile;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip_Tray;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_Exit;
+        private System.Windows.Forms.Button button_RemoveProfile;
     }
 }
 

@@ -80,6 +80,9 @@ namespace AppResizer
         private static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
@@ -121,9 +124,8 @@ namespace AppResizer
         public static extern uint GetPixel(IntPtr hDC, int x, int y);
         [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = true, ExactSpelling = true)]
         public static extern int BitBlt(IntPtr hDC, int x, int y, int nWidth, int nHeight, IntPtr hSrcDC, int xSrc, int ySrc, int dwRop);
-
-
-
+        
+        
         // Рисование прямоугольника
         public void draw_rect(byte r, byte g, byte b, int X, int Y, int W, int H)
         {
@@ -158,6 +160,8 @@ namespace AppResizer
         private void Form1_Shown(object sender, EventArgs e)
         {
             notifyIcon.ContextMenuStrip = contextMenuStrip_Tray;
+
+            clearNotExistsProfiles();
 
             getSettigns();
             
@@ -287,6 +291,31 @@ namespace AppResizer
             return Process.GetProcessById((int)pid);
         }
 
+        public void clearNotExistsProfiles() {
+
+            if (!File.Exists("applications.ini")) {
+                File.WriteAllText("applications.ini", "");
+                return;
+            }
+
+            string[] lines = File.ReadAllLines("applications.ini");
+
+            // Write entire settings file
+            File.WriteAllText("applications.ini", "");
+            using (StreamWriter fileWriter = new StreamWriter("applications.ini"))
+            {
+                for (int i = 0; i < lines.Length; i++) {
+                    Match match = new Regex(@"path: '(.+)';",
+                            RegexOptions.IgnoreCase).Match(lines[i]);
+
+                    // If Profile's game file exists...
+                    if (match.Success && File.Exists(match.Groups[1].Value))
+                        fileWriter.WriteLine(lines[i]);
+                }
+                fileWriter.Close();
+            }
+        }
+
         public void getSettigns() {
 
             if (!File.Exists("settings.ini"))
@@ -374,8 +403,7 @@ namespace AppResizer
 
         public void borderSelectToggle(bool needApplyResult = true) {
             // Errors check
-            if (!timer_scan_pixels.Enabled)
-            {
+            if (!timer_scan_pixels.Enabled) {
                 if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length) {
                     MessageBox.Show("Window not selected", "Error"); return;
                 }
@@ -446,6 +474,7 @@ namespace AppResizer
                     numericUpDown_BorderLeft.Value          = SavedAppsData[ currProc.MainModule.FileName ].borderLeft;
                     numericUpDown_DelayStartResize.Value    = (decimal)SavedAppsData[ currProc.MainModule.FileName ].delayStartingResize / 1000;
                     label_HaveProfile.Visible = true;
+                    button_RemoveProfile.Visible = true;
                 }
                 else {
                     numericUpDown_BorderTop.Value           = defaultWndBorder_Top;
@@ -454,6 +483,7 @@ namespace AppResizer
                     numericUpDown_BorderLeft.Value          = defaultWndBorder_Left;
                     numericUpDown_DelayStartResize.Value    = defaultDelayAutoResize;
                     label_HaveProfile.Visible = false;
+                    button_RemoveProfile.Visible = false;
                 }
                 
                 // Total Resolution
@@ -538,11 +568,65 @@ namespace AppResizer
                 // No need in correcting size of selected window
                 ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = true;
                 label_HaveProfile.Visible = true;
+                button_RemoveProfile.Visible = true;
                 MessageBox.Show("Saved!", "Success");
             }
             else
                 MessageBox.Show("applications.ini not found", "Error");
         }
+        
+        private void button_RemoveProfile_Click(object sender, EventArgs e)
+        { removeCurrProfile(); }
+        public void removeCurrProfile()
+        {
+            int selIndex = listBox_Windows.SelectedIndex;
+            if (selIndex == -1) {
+                MessageBox.Show("Select Proccess", "Error"); return;
+            }
+            if (selIndex >= ProcList.Length) {
+                MessageBox.Show("Please, Refresh the Proccess list", "Error"); return;
+            }
+            if (ProcList[selIndex].HasExited) {
+                MessageBox.Show("Proccess not exists anymore!\n\rRefresh wondow's list and try again", "Error"); return;
+            }
+
+            if (!File.Exists("applications.ini"))
+                File.WriteAllText("applications.ini", "");
+
+            // Gather data to save
+            string profileFilePath = ProcList[selIndex].MainModule.FileName;
+
+            // Edit only data with current Profile
+            if (File.Exists("applications.ini"))
+            {
+                string[] lines = File.ReadAllLines("applications.ini");
+
+                // Write entire settings file
+                File.WriteAllText("applications.ini", "");
+                using (StreamWriter fileWriter = new StreamWriter("applications.ini"))
+                {
+                    for (int i = 0; i < lines.Length; i++) {
+                        if (!lines[i].Contains("'" + profileFilePath + "'"))
+                            fileWriter.WriteLine(lines[i]);
+                    }
+
+                    fileWriter.Close();
+                }
+
+                // Save to the current memory also
+                if (SavedAppsData.ContainsKey(profileFilePath))
+                    SavedAppsData.Remove(profileFilePath);
+
+                // No need in correcting size of selected window
+                ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = false;
+                label_HaveProfile.Visible = false;
+                button_RemoveProfile.Visible = false;
+                MessageBox.Show("Removed!", "Success");
+            }
+            else
+                MessageBox.Show("applications.ini not found", "Error");
+        }
+
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         { Tread_Update.Abort(); }
@@ -637,7 +721,7 @@ namespace AppResizer
             selected_area_wndY = Cursor.Position.Y;
 
             // Recieve necessery part of screen
-            selected_scanned_px_area = scan_pixels_area_from_wnd(Cursor.Position.X - (scan_area_W/2), Cursor.Position.Y - (scan_area_W / 2), scan_area_W, scan_area_H);
+            selected_scanned_px_area = scan_pixels_area_from_wnd(Cursor.Position.X - (scan_area_W/2), Cursor.Position.Y - (scan_area_H / 2), scan_area_W, scan_area_H);
             
             // Visuaaly whow selected area in programm
             Graphics gForm = Graphics.FromHwnd(picture_BorderVisualizer.Handle);
@@ -836,5 +920,6 @@ namespace AppResizer
             notifyIcon.Dispose();
             Application.Exit();
         }
+
     }
 }
