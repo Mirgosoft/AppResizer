@@ -73,6 +73,7 @@
             this.contextMenuStrip_Tray = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem_Exit = new System.Windows.Forms.ToolStripMenuItem();
             this.button_RemoveProfile = new System.Windows.Forms.Button();
+            this.button_set1050p = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderTop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderRight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_BorderBot)).BeginInit();
@@ -455,6 +456,7 @@
             // panel3
             // 
             this.panel3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(255)))), ((int)(((byte)(244)))));
+            this.panel3.Controls.Add(this.button_set1050p);
             this.panel3.Controls.Add(this.numericUpDown_ResolutionH);
             this.panel3.Controls.Add(this.numericUpDown_ResolutionW);
             this.panel3.Controls.Add(this.label8);
@@ -627,6 +629,17 @@
             this.button_RemoveProfile.Visible = false;
             this.button_RemoveProfile.Click += new System.EventHandler(this.button_RemoveProfile_Click);
             // 
+            // button_set1050p
+            // 
+            this.button_set1050p.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_set1050p.Location = new System.Drawing.Point(153, 37);
+            this.button_set1050p.Name = "button_set1050p";
+            this.button_set1050p.Size = new System.Drawing.Size(63, 27);
+            this.button_set1050p.TabIndex = 28;
+            this.button_set1050p.Text = "1050p";
+            this.button_set1050p.UseVisualStyleBackColor = true;
+            this.button_set1050p.Click += new System.EventHandler(this.button_set1050p_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -723,6 +736,7 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip_Tray;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_Exit;
         private System.Windows.Forms.Button button_RemoveProfile;
+        private System.Windows.Forms.Button button_set1050p;
     }
 }
 

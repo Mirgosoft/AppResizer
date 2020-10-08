@@ -706,6 +706,46 @@ namespace AppResizer
             SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H);
         }
 
+        private void button_set1050p_Click(object sender, EventArgs e)
+        {
+            if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length) {
+                MessageBox.Show("Window not selected", "Error"); return;
+            }
+            if (ProcList[lastSelectedWindowNode].HasExited) {
+                MessageBox.Show("Proccess not exists anymore!\n\rRefresh wondow's list and try again", "Error"); return;
+            }
+
+            // calc result sizes
+            int total_W = (int)Math.Round(decimal.Parse(label_SizeW.Text));
+            int total_H = (int)Math.Round(decimal.Parse(label_SizeH.Text));
+
+            for (double mult_i = 2.0; mult_i > 0.9; mult_i = mult_i - 0.1) {
+                int test_H = (int)Math.Round(Convert.ToDouble(total_H) * mult_i);
+                if (test_H > 1050)
+                    continue;
+
+                // Если наконец размер подошел
+
+                total_W = (int)Math.Round(Convert.ToDouble(total_W) * mult_i);
+                total_H = (int)Math.Round(Convert.ToDouble(total_H) * mult_i);
+
+                numericUpDown_ResolutionW.Value = total_W;
+                numericUpDown_ResolutionH.Value = total_H;
+                label_SizeW.Text = total_W.ToString();
+                label_SizeH.Text = total_H.ToString();
+
+                total_W += (int)(numericUpDown_BorderLeft.Value + numericUpDown_BorderRight.Value);
+                total_H += (int)(numericUpDown_BorderTop.Value + numericUpDown_BorderBot.Value);
+
+                SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H);
+
+                // MessageBox.Show("result size:" + total_W + "x" + total_H + " (multiply = " + mult_i + ")!", "Saccess.");
+
+                break;
+            }
+
+        }
+
         private void timer_scan_pixels_Tick(object sender, EventArgs e)
         {
             if (!timer_scan_pixels.Enabled)
