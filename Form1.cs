@@ -59,13 +59,16 @@ namespace AppResizer
         }
 
 
-        Dictionary<string, AppsData> SavedAppsData = new Dictionary<string, AppsData>(); // SavedAppsData[path-to-file] = { data... };
+        // SavedAppsData["path: 'путь-до-файла-если-есть', procName: 'имя-процесса', wndTitle: 'заголовок-окна'"] = { data... };
+        Dictionary<string, AppsData> SavedAppsData = new Dictionary<string, AppsData>();
         public class AppsData
         {
             public int startingWidth = 0;
             public int startingHeight = 0;
             public int delayStartingResize = 0;
         }
+
+        Regex procDataLine_Regex = new Regex(@"path: '(.*)'; procName: '(.*)'; wndTitle: '(.*)'; resolution: (\d+)x(\d+); delayStartingResize: (\d+);");
 
         Thread Tread_Update;
         
@@ -168,13 +171,7 @@ namespace AppResizer
                     continue;
                 
                 bool processProtected = false;
-                string currProcFilename = "";
-                try {
-                    currProcFilename = CurrentProcess.MainModule.FileName;
-                }
-                catch { // Process is protected. Getting an error, if trying to recieve info about process's file path.
-                    continue;
-                }
+                string currProcInfo = GetProcInfo(CurrentProcess);
 
                 // Additional data only if not previously exists
                 if (!ProcAdditionalDataList.ContainsKey(CurrentProcess.MainWindowHandle))
@@ -182,11 +179,11 @@ namespace AppResizer
                     
                 // Change sizes for the new windows, which saved before as Profiles in INI file
                 if (!ProcAdditionalDataList[CurrentProcess.MainWindowHandle].alreadyStarted 
-                    && SavedAppsData.ContainsKey(currProcFilename))
+                    && SavedAppsData.ContainsKey(currProcInfo))
                 {
                     if (ProcAdditionalDataList[CurrentProcess.MainWindowHandle].delayStartingResizeLeft == -999) {
                         ProcAdditionalDataList[CurrentProcess.MainWindowHandle].delayStartingResizeLeft =
-                            SavedAppsData[currProcFilename].delayStartingResize - 500; // Init Delay to First auto resize
+                            SavedAppsData[currProcInfo].delayStartingResize - 500; // Init Delay to First auto resize
                     }
                     else if (ProcAdditionalDataList[CurrentProcess.MainWindowHandle].delayStartingResizeLeft > 0) {
                         ProcAdditionalDataList[CurrentProcess.MainWindowHandle].delayStartingResizeLeft -= 500; // Decrease delay
@@ -196,17 +193,17 @@ namespace AppResizer
                     {
                         // If time to Starting resize come
                         SetWindowSize(CurrentProcess.MainWindowHandle,
-                            SavedAppsData[currProcFilename].startingWidth,
-                            SavedAppsData[currProcFilename].startingHeight);
+                            SavedAppsData[currProcInfo].startingWidth,
+                            SavedAppsData[currProcInfo].startingHeight);
 
                         // Update sizes in programm also, if window currently selected
                         if (lastSelectedWindowNode > -1 && lastSelectedWindowNode < ProcList.Length
                             && !ProcList[lastSelectedWindowNode].HasExited
-                            && ProcList[lastSelectedWindowNode].MainModule.FileName == currProcFilename)
+                            && GetProcInfo(ProcList[lastSelectedWindowNode]) == currProcInfo)
                         {
                             Invoke(new Action(() => {
-                                numericUpDown_ResolutionW.Value = SavedAppsData[currProcFilename].startingWidth;
-                                numericUpDown_ResolutionH.Value = SavedAppsData[currProcFilename].startingHeight;
+                                numericUpDown_ResolutionW.Value = SavedAppsData[currProcInfo].startingWidth;
+                                numericUpDown_ResolutionH.Value = SavedAppsData[currProcInfo].startingHeight;
                             }));
                         }
 
@@ -218,7 +215,7 @@ namespace AppResizer
                 if (this.WindowState != FormWindowState.Minimized 
                         && lastSelectedWindowNode > -1 && lastSelectedWindowNode < ProcList.Length
                         && !ProcList[lastSelectedWindowNode].HasExited
-                        && ProcList[lastSelectedWindowNode].MainModule.FileName == currProcFilename) {
+                        && GetProcInfo(ProcList[lastSelectedWindowNode]) == currProcInfo) {
                     WndSizes wndSizes = new WndSizes();
                     GetWndSizes(CurrentProcess.MainWindowHandle, ref wndSizes);
                     Invoke(new Action(() => {
@@ -283,20 +280,29 @@ namespace AppResizer
 
             string[] lines = File.ReadAllLines("applications.ini");
 
-            // Write entire settings file
-            File.WriteAllText("applications.ini", "");
-            using (StreamWriter fileWriter = new StreamWriter("applications.ini"))
-            {
-                for (int i = 0; i < lines.Length; i++) {
-                    Match match = new Regex(@"path: '(.+)';",
-                            RegexOptions.IgnoreCase).Match(lines[i]);
+            List<string> resultLines_List = new List<string>();
+            
+            for (int i = 0; i < lines.Length; i++) {
+                if (!procDataLine_Regex.Match(lines[i]).Success) // If data line from applications.ini not equal to Regex template.
+                    continue;
 
-                    // If Profile's game file exists...
-                    if (match.Success && File.Exists(match.Groups[1].Value))
-                        fileWriter.WriteLine(lines[i]);
+                Match match = new Regex(@"path: '(.*)'; procName: '",
+                        RegexOptions.IgnoreCase).Match(lines[i]);
+
+                // Verify, if Profile's game file exists...
+                if (match.Success) {
+                    if (match.Groups[1].Value != "") {
+                        if (File.Exists(match.Groups[1].Value))
+                            resultLines_List.Add(lines[i]);
+                        // If file not exists - not add his data line.
+                    }
+                    else
+                        resultLines_List.Add(lines[i]);
                 }
-                fileWriter.Close();
             }
+
+            if (lines.Length != resultLines_List.Count)
+                File.WriteAllLines("applications.ini", resultLines_List.ToArray());
         }
 
         public void getSettigns() {
@@ -329,13 +335,13 @@ namespace AppResizer
                     string line;
                     while ((line = file.ReadLine()) != null)
                     {
-                        Match match = new Regex(@"path: '(.+)'; resolution: (\d+)x(\d+); delayStartingResize: (\d+);", 
-                            RegexOptions.IgnoreCase).Match(line);
+                        Match match = procDataLine_Regex.Match(line);
                         if (match.Success) {
-                            SavedAppsData.Add(match.Groups[1].Value, new AppsData());
-                            SavedAppsData[match.Groups[1].Value].startingWidth          = int.Parse(match.Groups[2].Value);
-                            SavedAppsData[match.Groups[1].Value].startingHeight         = int.Parse(match.Groups[3].Value);
-                            SavedAppsData[match.Groups[1].Value].delayStartingResize    = int.Parse(match.Groups[4].Value);
+                            string procInfo = "path: '" + match.Groups[1].Value + "', procName: '" + match.Groups[2].Value + "', wndTitle: '" + match.Groups[3].Value + "'";
+                            SavedAppsData.Add(procInfo, new AppsData());
+                            SavedAppsData[procInfo].startingWidth          = int.Parse(match.Groups[4].Value);
+                            SavedAppsData[procInfo].startingHeight         = int.Parse(match.Groups[5].Value);
+                            SavedAppsData[procInfo].delayStartingResize    = int.Parse(match.Groups[6].Value);
                         }
                     }
                     file.Close();
@@ -397,8 +403,8 @@ namespace AppResizer
 
             Process currProc = ProcList[listBox_Windows.SelectedIndex];
             
-            bool processProtected = false;
             string proc_path = "";
+            string currProcInfo = GetProcInfo(currProc);
             label_ProcTitle.Text = "Title: " + currProc.MainWindowTitle;
             try
             {
@@ -406,26 +412,20 @@ namespace AppResizer
                     currProc.MainModule.FileName.Length > 46
                         ? "..." + currProc.MainModule.FileName.Substring(currProc.MainModule.FileName.Length - 43)
                         : currProc.MainModule.FileName);
+                label_ProcPath.BackColor = Color.Transparent;
             }
             catch { // Process is protected. Getting an error, if trying to recieve info about process's file path.
-                processProtected = true;
-                proc_path = "   Process is protected !!! Can't use him =(   ";
-                lastSelectedWindowNode = -1;
-                lastSelectedWindowProcId = -1;
+                proc_path = "  (Process is protected. His path isn't available)   ";
                 label_ProcPath.BackColor = Color.FromArgb(255,255,88,88);
-            }
-
-            if (!processProtected) { // If we can use the process in another parts of program.
-                lastSelectedWindowNode = listBox_Windows.SelectedIndex;
-                lastSelectedWindowProcId = (int)currProc.MainWindowHandle;
-                label_ProcPath.BackColor = Color.Transparent;
             }
             
             label_ProcPath.Text = proc_path;
-            
+            lastSelectedWindowNode = listBox_Windows.SelectedIndex;
+            lastSelectedWindowProcId = (int)currProc.MainWindowHandle;
+
             // Proc info to Form
-            if (!processProtected && SavedAppsData.ContainsKey(currProc.MainModule.FileName )) {
-                numericUpDown_DelayStartResize.Value    = (decimal)SavedAppsData[ currProc.MainModule.FileName ].delayStartingResize / 1000;
+            if (SavedAppsData.ContainsKey(currProcInfo)) {
+                numericUpDown_DelayStartResize.Value    = (decimal)SavedAppsData[currProcInfo].delayStartingResize / 1000;
                 label_HaveProfile.Visible = true;
                 button_RemoveProfile.Visible = true;
             }
@@ -470,8 +470,17 @@ namespace AppResizer
                 File.WriteAllText("applications.ini", "");
 
             // Gather data to save
-            string profileFilePath =    ProcList[selIndex].MainModule.FileName;
-            string resultProfileText = "path: '"+ profileFilePath + "'; resolution: "+ int.Parse(label_SizeW.Text) + "x"+ int.Parse(label_SizeH.Text) + 
+            string profileFileInfo = GetProcInfo(ProcList[selIndex]);
+            string proc_path = "";
+            try {
+                proc_path = ProcList[selIndex].MainModule.FileName;
+            }
+            catch {
+                proc_path = "";
+            }
+
+            string resultProfileText = "path: '"+ proc_path + "'; procName: '"+ ProcList[selIndex].ProcessName + "'; wndTitle: '" + ProcList[selIndex].MainWindowTitle + 
+                "'; resolution: " + int.Parse(label_SizeW.Text) + "x"+ int.Parse(label_SizeH.Text) + 
                 "; delayStartingResize: " + Math.Round(numericUpDown_DelayStartResize.Value * 1000) + ";";
             
             // Edit only data with current Profile
@@ -480,7 +489,10 @@ namespace AppResizer
                 bool savedBefore = false;
 
                 for (int i = 0; i < lines.Length; i++) {
-                    if (lines[i].IndexOf("path: '"+ profileFilePath + "'") > -1) {
+                    if (lines[i].Contains("path: '"+ proc_path + "'") && 
+                        lines[i].Contains("procName: '" + ProcList[selIndex].ProcessName + "'") &&
+                        lines[i].Contains("wndTitle: '" + ProcList[selIndex].MainWindowTitle + "'"))
+                    {
                         lines[i] = resultProfileText;
                         savedBefore = true;
                         break;
@@ -502,11 +514,11 @@ namespace AppResizer
                 }
 
                 // Save to the current memory also
-                if (!SavedAppsData.ContainsKey(profileFilePath))
-                    SavedAppsData.Add(profileFilePath, new AppsData());
-                SavedAppsData[profileFilePath].startingWidth =          int.Parse(label_SizeW.Text);
-                SavedAppsData[profileFilePath].startingHeight =         int.Parse(label_SizeH.Text);
-                SavedAppsData[profileFilePath].delayStartingResize =    (int)(numericUpDown_DelayStartResize.Value * 1000);
+                if (!SavedAppsData.ContainsKey(profileFileInfo))
+                    SavedAppsData.Add(profileFileInfo, new AppsData());
+                SavedAppsData[profileFileInfo].startingWidth =          int.Parse(label_SizeW.Text);
+                SavedAppsData[profileFileInfo].startingHeight =         int.Parse(label_SizeH.Text);
+                SavedAppsData[profileFileInfo].delayStartingResize =    (int)(numericUpDown_DelayStartResize.Value * 1000);
 
                 // No need in correcting size of selected window
                 ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = true;
@@ -537,7 +549,14 @@ namespace AppResizer
                 File.WriteAllText("applications.ini", "");
 
             // Gather data to save
-            string profileFilePath = ProcList[selIndex].MainModule.FileName;
+            string profileFileInfo = GetProcInfo(ProcList[selIndex]);
+            string proc_path = "";
+            try {
+                proc_path = ProcList[selIndex].MainModule.FileName;
+            }
+            catch {
+                proc_path = "";
+            }
 
             // Edit only data with current Profile
             if (File.Exists("applications.ini"))
@@ -549,7 +568,10 @@ namespace AppResizer
                 using (StreamWriter fileWriter = new StreamWriter("applications.ini"))
                 {
                     for (int i = 0; i < lines.Length; i++) {
-                        if (!lines[i].Contains("'" + profileFilePath + "'"))
+                        if (!lines[i].Contains("'" + proc_path + "'") &&
+                            !lines[i].Contains("procName: '" + ProcList[selIndex].ProcessName + "'") &&
+                            !lines[i].Contains("wndTitle: '" + ProcList[selIndex].MainWindowTitle + "'")
+                            )
                             fileWriter.WriteLine(lines[i]);
                     }
 
@@ -557,8 +579,8 @@ namespace AppResizer
                 }
 
                 // Save to the current memory also
-                if (SavedAppsData.ContainsKey(profileFilePath))
-                    SavedAppsData.Remove(profileFilePath);
+                if (SavedAppsData.ContainsKey(profileFileInfo))
+                    SavedAppsData.Remove(profileFileInfo);
 
                 // No need in correcting size of selected window
                 ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = false;
@@ -615,6 +637,23 @@ namespace AppResizer
             label_SizeH.Text = total_H.ToString();
             
             SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H);
+        }
+
+        // Возвращаемое значение должно быть по шаблону   "path: 'путь-до-файла-если-есть', procName: 'имя-процесса', wndTitle: 'заголовок-окна'"
+        public string GetProcInfo(Process proc)
+        {
+            string result = "";
+            string currProcFilename = "";
+            try {
+                currProcFilename = proc.MainModule.FileName;
+            }
+            catch { }
+            if (currProcFilename != "")
+                result = "path: '" + currProcFilename + "', procName: '" + proc.ProcessName + "', wndTitle: '" + proc.MainWindowTitle + "'";
+            else        // Если процесс защищен, записываем только имя процесса и заголовок окна
+                result = "path: '', procName: '" + proc.ProcessName + "', wndTitle: '" + proc.MainWindowTitle + "'";
+
+            return result;
         }
 
         private void button_SetCustomSizes_Click(object sender, EventArgs e)
@@ -704,6 +743,5 @@ namespace AppResizer
             notifyIcon.Dispose();
             Application.Exit();
         }
-
     }
 }
