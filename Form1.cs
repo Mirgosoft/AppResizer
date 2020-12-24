@@ -144,11 +144,11 @@ namespace AppResizer
         {
             notifyIcon.ContextMenuStrip = contextMenuStrip_Tray;
 
-            clearNotExistsProfiles();
+            ClearNotExistsProfiles();
 
-            getSettigns();
+            GetSettigns();
             
-            updateProcessList();
+            UpdateProcessList();
 
             // Start Thread
             Tread_Update = new Thread(Tread_Update_func);
@@ -163,7 +163,7 @@ namespace AppResizer
                 Thread.Sleep(500);
 
                 // Get the current process.
-                Process CurrentProcess = getForegroundProcess();
+                Process CurrentProcess = GetForegroundProcess();
                 
                 if (String.IsNullOrEmpty(CurrentProcess.MainWindowTitle))
                     continue;
@@ -227,9 +227,9 @@ namespace AppResizer
         }
         
         private void button_RefreshProcList_Click(object sender, EventArgs e)
-        { updateProcessList(); }
+        { UpdateProcessList(); }
 
-        public void updateProcessList() {
+        public void UpdateProcessList() {
             // Get the current process.
             ProcList = getProcessList();
             
@@ -263,7 +263,7 @@ namespace AppResizer
             }
         }
 
-        public Process getForegroundProcess() {
+        public Process GetForegroundProcess() {
             IntPtr hwnd = GetForegroundWindow();
             uint pid;
             GetWindowThreadProcessId(hwnd, out pid);
@@ -271,7 +271,7 @@ namespace AppResizer
             return Process.GetProcessById((int)pid);
         }
 
-        public void clearNotExistsProfiles() {
+        public void ClearNotExistsProfiles() {
 
             if (!File.Exists("applications.ini")) {
                 File.WriteAllText("applications.ini", "");
@@ -305,21 +305,32 @@ namespace AppResizer
                 File.WriteAllLines("applications.ini", resultLines_List.ToArray());
         }
 
-        public void getSettigns() {
+        public void GetSettigns() {
 
-            if (!File.Exists("settings.ini"))
-                File.WriteAllText("settings.ini", "delayStartingResize: 2;");
+            // Если файла не было или он не по шаблону...
+            if (!File.Exists("settings.ini") || 
+                !Regex.Match(File.ReadAllText("settings.ini"), @"iDelayStartingResize: \d+;\r\nbLaunchInTray: [^;]+;\r\niAutoP: \d+;").Success
+                )
+                File.WriteAllText("settings.ini", "iDelayStartingResize: 2;\nbLaunchInTray: false;\niAutoP: 1050;");
 
             // default params for entire programm
             if (File.Exists("settings.ini"))
             {
-                Match match = new Regex(@"delayStartingResize: (\d+);", 
-                    RegexOptions.IgnoreCase).Match(File.ReadAllLines("settings.ini")[0]);
-                if (match.Success)
-                {
+                string settings_text = File.ReadAllText("settings.ini");
+                Match match = new Regex(@"iDelayStartingResize: (\d+);").Match(settings_text);
+                if (match.Success) {
                     defaultDelayAutoResize  = int.Parse(match.Groups[1].Value);
                     numericUpDown_DelayStartResize.Value = defaultDelayAutoResize;
                 }
+
+                match = new Regex(@"bLaunchInTray: ([^;]+);").Match(settings_text);
+                if (match.Success && match.Groups[1].Value == "true") {
+                    this.WindowState = FormWindowState.Minimized;
+                    checkBox_LaunchInTray.Checked = true;
+                }
+                match = new Regex(@"iAutoP: (\d+);").Match(settings_text);
+                if (match.Success)
+                    numericUpDown_AutoXXXX_p.Value = Convert.ToInt32(match.Groups[1].Value);
             }
             else
                 MessageBox.Show("settings.ini not found", "Error");
@@ -349,6 +360,20 @@ namespace AppResizer
             }
             else
                 MessageBox.Show("applications.ini not found", "Error");
+        }
+
+        public void SaveSettings() {
+            string total_text = "";
+            string[] lines = File.ReadAllLines("settings.ini");
+            
+            for (int line_i = 0; line_i < lines.Length; line_i++) {
+                if (lines[line_i].Contains("bLaunchInTray"))
+                    lines[line_i] = "bLaunchInTray: " + (checkBox_LaunchInTray.Checked ? "true" : "false") +";";
+                else if (lines[line_i].Contains("iAutoP"))
+                    lines[line_i] = "iAutoP: " + ((int)numericUpDown_AutoXXXX_p.Value) + ";";
+            }
+
+            File.WriteAllLines("settings.ini", lines);
         }
 
 
@@ -397,7 +422,7 @@ namespace AppResizer
                 return;
             
             if (ProcList[listBox_Windows.SelectedIndex].HasExited) {
-                updateProcessList();
+                UpdateProcessList();
                 return;
             }
 
@@ -594,7 +619,10 @@ namespace AppResizer
 
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
-        { Tread_Update.Abort(); }
+        {
+            Tread_Update.Abort();
+            SaveSettings();
+        }
 
 
         private void button_ScalePlus_Click(object sender, EventArgs e)
@@ -682,22 +710,27 @@ namespace AppResizer
             SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H);
         }
 
-        private void button_set1050p_Click(object sender, EventArgs e)
+        private void button_setXXXXp_Click(object sender, EventArgs e)
         {
-            if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length) {
+            if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length)
+            {
                 MessageBox.Show("Window not selected", "Error"); return;
             }
-            if (ProcList[lastSelectedWindowNode].HasExited) {
+            if (ProcList[lastSelectedWindowNode].HasExited)
+            {
                 MessageBox.Show("Process not exists anymore!\n\rRefresh wondow's list and try again", "Error"); return;
             }
+
+            int maxP = (int)numericUpDown_AutoXXXX_p.Value;
 
             // Calc result sizes
             int total_W = (int)Math.Round(decimal.Parse(label_SizeW.Text));
             int total_H = (int)Math.Round(decimal.Parse(label_SizeH.Text));
 
-            for (double mult_i = 2.0; mult_i > 0.9; mult_i = mult_i - 0.1) {
+            for (double mult_i = 2.0; mult_i > 0.1; mult_i = mult_i - 0.1)
+            {
                 int test_H = (int)Math.Round(Convert.ToDouble(total_H) * mult_i);
-                if (test_H > 1050)
+                if (test_H > maxP)
                     continue;
 
                 // If sizes OK.
@@ -716,7 +749,6 @@ namespace AppResizer
 
                 break;
             }
-
         }
 
         // Minimize in Tray
@@ -743,5 +775,6 @@ namespace AppResizer
             notifyIcon.Dispose();
             Application.Exit();
         }
+
     }
 }
