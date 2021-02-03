@@ -67,9 +67,7 @@ namespace AppResizer
             public int startingHeight = 0;
             public int delayStartingResize = 0;
         }
-
-        Regex procDataLine_Regex = new Regex(@"path: '(.*)'; procName: '(.*)'; wndTitle: '(.*)'; resolution: (\d+)x(\d+); delayStartingResize: (\d+);");
-
+        
         Thread Tread_Update;
         
 
@@ -153,8 +151,6 @@ namespace AppResizer
             // Start Thread
             Tread_Update = new Thread(Tread_Update_func);
             Tread_Update.Start();
-
-            
         }
         public void Tread_Update_func()
         {
@@ -283,22 +279,12 @@ namespace AppResizer
             List<string> resultLines_List = new List<string>();
             
             for (int i = 0; i < lines.Length; i++) {
-                if (!procDataLine_Regex.Match(lines[i]).Success) // If data line from applications.ini not equal to Regex template.
-                    continue;
-
-                Match match = new Regex(@"path: '(.*)'; procName: '",
-                        RegexOptions.IgnoreCase).Match(lines[i]);
+                string path = GetParamFromLineINI(lines[i], "path");
 
                 // Verify, if Profile's game file exists...
-                if (match.Success) {
-                    if (match.Groups[1].Value != "") {
-                        if (File.Exists(match.Groups[1].Value))
-                            resultLines_List.Add(lines[i]);
-                        // If file not exists - not add his data line.
-                    }
-                    else
-                        resultLines_List.Add(lines[i]);
-                }
+                if (path != null && path != "" && File.Exists(path))
+                    resultLines_List.Add(lines[i]);
+                // If file not exists - not add his data line.
             }
 
             if (lines.Length != resultLines_List.Count)
@@ -346,13 +332,18 @@ namespace AppResizer
                     string line;
                     while ((line = file.ReadLine()) != null)
                     {
-                        Match match = procDataLine_Regex.Match(line);
-                        if (match.Success) {
-                            string procInfo = "path: '" + match.Groups[1].Value + "', procName: '" + match.Groups[2].Value + "', wndTitle: '" + match.Groups[3].Value + "'";
+                        string path = GetParamFromLineINI(line, "path");
+                        string procName = GetParamFromLineINI(line, "procName");
+                        string wndTitle = GetParamFromLineINI(line, "wndTitle");
+                        string startingWidth = Regex.Match(GetParamFromLineINI(line, "resolution"), @"(\d+)x").Groups[1].Value;
+                        string startingHeight = Regex.Match(GetParamFromLineINI(line, "resolution"), @"x(\d+)").Groups[1].Value;
+                        string delayStartingResize = GetParamFromLineINI(line, "delayStartingResize");
+                        if (path != null && procName != null && wndTitle != null) {
+                            string procInfo = "path: '" + path + "', procName: '" + procName + "', wndTitle: '" + wndTitle + "'";
                             SavedAppsData.Add(procInfo, new AppsData());
-                            SavedAppsData[procInfo].startingWidth          = int.Parse(match.Groups[4].Value);
-                            SavedAppsData[procInfo].startingHeight         = int.Parse(match.Groups[5].Value);
-                            SavedAppsData[procInfo].delayStartingResize    = int.Parse(match.Groups[6].Value);
+                            SavedAppsData[procInfo].startingWidth          = int.Parse(startingWidth);
+                            SavedAppsData[procInfo].startingHeight         = int.Parse(startingHeight);
+                            SavedAppsData[procInfo].delayStartingResize    = int.Parse(delayStartingResize);
                         }
                     }
                     file.Close();
@@ -405,19 +396,11 @@ namespace AppResizer
         }
         
         
-
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
-        {
-            //if (e.KeyCode == Keys.F5 && timer_scan_pixels.Enabled) // Apply selecting border data
-                //borderSelectToggle();
-        }
-        
         private void listBox_Windows_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBox_Windows.SelectedIndex < 0)
                 return;
-
-
+            
             if (listBox_Windows.SelectedIndex >= ProcList.Length)
                 return;
             
@@ -453,11 +436,13 @@ namespace AppResizer
                 numericUpDown_DelayStartResize.Value    = (decimal)SavedAppsData[currProcInfo].delayStartingResize / 1000;
                 label_HaveProfile.Visible = true;
                 button_RemoveProfile.Visible = true;
+                button_LoadProfile.Visible = true;
             }
             else {
                 numericUpDown_DelayStartResize.Value    = defaultDelayAutoResize;
                 label_HaveProfile.Visible = false;
                 button_RemoveProfile.Visible = false;
+                button_LoadProfile.Visible = false;
             }
                 
             // Total Resolution
@@ -504,9 +489,9 @@ namespace AppResizer
                 proc_path = "";
             }
 
-            string resultProfileText = "path: '"+ proc_path + "'; procName: '"+ ProcList[selIndex].ProcessName + "'; wndTitle: '" + ProcList[selIndex].MainWindowTitle + 
-                "'; resolution: " + int.Parse(label_SizeW.Text) + "x"+ int.Parse(label_SizeH.Text) + 
-                "; delayStartingResize: " + Math.Round(numericUpDown_DelayStartResize.Value * 1000) + ";";
+            string resultProfileText = "♿ path: " + proc_path + " ♿ procName: " + ProcList[selIndex].ProcessName + " ♿ wndTitle: " + ProcList[selIndex].MainWindowTitle +
+                " ♿ resolution: " + int.Parse(label_SizeW.Text) + "x"+ int.Parse(label_SizeH.Text) +
+                " ♿ delayStartingResize: " + Math.Round(numericUpDown_DelayStartResize.Value * 1000) + " ♿";
             
             // Edit only data with current Profile
             if (File.Exists("applications.ini")) {
@@ -549,6 +534,7 @@ namespace AppResizer
                 ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = true;
                 label_HaveProfile.Visible = true;
                 button_RemoveProfile.Visible = true;
+                button_LoadProfile.Visible = true;
                 MessageBox.Show("Saved!", "Success");
             }
             else
@@ -611,6 +597,7 @@ namespace AppResizer
                 ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = false;
                 label_HaveProfile.Visible = false;
                 button_RemoveProfile.Visible = false;
+                button_LoadProfile.Visible = false;
                 MessageBox.Show("Removed!", "Success");
             }
             else
@@ -776,5 +763,28 @@ namespace AppResizer
             Application.Exit();
         }
 
+        private void button_LoadProfile_Click(object sender, EventArgs e)
+        {
+            if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length) {
+                MessageBox.Show("Window not selected", "Error"); return;
+            }
+            if (ProcList[lastSelectedWindowNode].HasExited) {
+                MessageBox.Show("Process not exists anymore!\n\rRefresh wondow's list and try again", "Error"); return;
+            }
+            string currProcInfo = GetProcInfo(ProcList[lastSelectedWindowNode]);
+
+            if (!SavedAppsData.ContainsKey(currProcInfo)) {
+                MessageBox.Show("Process doesn't have a Saved Profile!", "Error"); return;
+            }
+
+            SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle,
+                            SavedAppsData[currProcInfo].startingWidth,
+                            SavedAppsData[currProcInfo].startingHeight);
+        }
+
+        private void Form1_Activated(object sender, EventArgs e)
+        { UpdateProcessList(); }
+
+        
     }
 }

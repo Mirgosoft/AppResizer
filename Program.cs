@@ -22,13 +22,11 @@ namespace AppResizer
             // Handler for exceptions in threads behind forms.
             System.Windows.Forms.Application.ThreadException += GlobalThreadExceptionHandler;
             
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
         }
-
-
+        
         // Detect Errors --------------------------------------------------------------------------
         private static void GlobalUnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
         {
@@ -47,6 +45,5 @@ namespace AppResizer
         }
         // -----------------------------------------------------------------------------------------
         
-
     }
 }
