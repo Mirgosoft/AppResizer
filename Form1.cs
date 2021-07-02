@@ -340,7 +340,10 @@ namespace AppResizer
                         string delayStartingResize = GetParamFromLineINI(line, "delayStartingResize");
                         if (path != null && procName != null && wndTitle != null) {
                             string procInfo = "path: '" + path + "', procName: '" + procName + "', wndTitle: '" + wndTitle + "'";
-                            SavedAppsData.Add(procInfo, new AppsData());
+                            if (SavedAppsData.ContainsKey(procInfo))
+                                SavedAppsData[procInfo] = new AppsData();
+                            else
+                                SavedAppsData.Add(procInfo, new AppsData());
                             SavedAppsData[procInfo].startingWidth          = int.Parse(startingWidth);
                             SavedAppsData[procInfo].startingHeight         = int.Parse(startingHeight);
                             SavedAppsData[procInfo].delayStartingResize    = int.Parse(delayStartingResize);
@@ -499,9 +502,9 @@ namespace AppResizer
                 bool savedBefore = false;
 
                 for (int i = 0; i < lines.Length; i++) {
-                    if (lines[i].Contains("path: '"+ proc_path + "'") && 
-                        lines[i].Contains("procName: '" + ProcList[selIndex].ProcessName + "'") &&
-                        lines[i].Contains("wndTitle: '" + ProcList[selIndex].MainWindowTitle + "'"))
+                    if (lines[i].Contains("♿ path: " + proc_path + " ♿") && 
+                        lines[i].Contains("♿ procName: " + ProcList[selIndex].ProcessName + " ♿") &&
+                        lines[i].Contains("♿ wndTitle: " + ProcList[selIndex].MainWindowTitle + " ♿"))
                     {
                         lines[i] = resultProfileText;
                         savedBefore = true;
@@ -607,7 +610,8 @@ namespace AppResizer
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Tread_Update.Abort();
+            if (Tread_Update != null)
+                Tread_Update.Abort();
             SaveSettings();
         }
 
