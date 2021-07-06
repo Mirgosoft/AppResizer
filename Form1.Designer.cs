@@ -62,6 +62,10 @@
             this.toolStripMenuItem_Exit = new System.Windows.Forms.ToolStripMenuItem();
             this.button_RemoveProfile = new System.Windows.Forms.Button();
             this.checkBox_LaunchInTray = new System.Windows.Forms.CheckBox();
+            this.label_Pos = new System.Windows.Forms.Label();
+            this.label_PosX = new System.Windows.Forms.Label();
+            this.label_PosY = new System.Windows.Forms.Label();
+            this.button_SetPosTo_0x1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_Scale)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_ResolutionW)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_ResolutionH)).BeginInit();
@@ -133,11 +137,11 @@
             // 
             this.label_Size.AutoSize = true;
             this.label_Size.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Size.Location = new System.Drawing.Point(13, 11);
+            this.label_Size.Location = new System.Drawing.Point(13, 18);
             this.label_Size.Name = "label_Size";
-            this.label_Size.Size = new System.Drawing.Size(117, 19);
+            this.label_Size.Size = new System.Drawing.Size(108, 19);
             this.label_Size.TabIndex = 16;
-            this.label_Size.Text = "Size:      x";
+            this.label_Size.Text = "Size:     x";
             this.label_Size.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // button_ScalePlus
@@ -265,7 +269,7 @@
             this.label_SizeW.AutoSize = true;
             this.label_SizeW.BackColor = System.Drawing.Color.Transparent;
             this.label_SizeW.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_SizeW.Location = new System.Drawing.Point(71, 11);
+            this.label_SizeW.Location = new System.Drawing.Point(62, 18);
             this.label_SizeW.Name = "label_SizeW";
             this.label_SizeW.Size = new System.Drawing.Size(45, 19);
             this.label_SizeW.TabIndex = 25;
@@ -277,7 +281,7 @@
             this.label_SizeH.AutoSize = true;
             this.label_SizeH.BackColor = System.Drawing.Color.Transparent;
             this.label_SizeH.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_SizeH.Location = new System.Drawing.Point(126, 11);
+            this.label_SizeH.Location = new System.Drawing.Point(117, 18);
             this.label_SizeH.Name = "label_SizeH";
             this.label_SizeH.Size = new System.Drawing.Size(45, 19);
             this.label_SizeH.TabIndex = 26;
@@ -297,6 +301,10 @@
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(255)))), ((int)(((byte)(244)))));
+            this.panel2.Controls.Add(this.button_SetPosTo_0x1);
+            this.panel2.Controls.Add(this.label_PosY);
+            this.panel2.Controls.Add(this.label_PosX);
+            this.panel2.Controls.Add(this.label_Pos);
             this.panel2.Controls.Add(this.label_SizeW);
             this.panel2.Controls.Add(this.label_Size);
             this.panel2.Controls.Add(this.label_SizeH);
@@ -484,6 +492,51 @@
             this.checkBox_LaunchInTray.Text = "Launch in Tray";
             this.checkBox_LaunchInTray.UseVisualStyleBackColor = true;
             // 
+            // label_Pos
+            // 
+            this.label_Pos.AutoSize = true;
+            this.label_Pos.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_Pos.Location = new System.Drawing.Point(2, 1);
+            this.label_Pos.Name = "label_Pos";
+            this.label_Pos.Size = new System.Drawing.Size(99, 19);
+            this.label_Pos.TabIndex = 27;
+            this.label_Pos.Text = "Pos:     x";
+            this.label_Pos.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // label_PosX
+            // 
+            this.label_PosX.AutoSize = true;
+            this.label_PosX.BackColor = System.Drawing.Color.Transparent;
+            this.label_PosX.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_PosX.Location = new System.Drawing.Point(43, 1);
+            this.label_PosX.Name = "label_PosX";
+            this.label_PosX.Size = new System.Drawing.Size(45, 19);
+            this.label_PosX.TabIndex = 28;
+            this.label_PosX.Text = "9999";
+            this.label_PosX.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label_PosY
+            // 
+            this.label_PosY.AutoSize = true;
+            this.label_PosY.BackColor = System.Drawing.Color.Transparent;
+            this.label_PosY.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label_PosY.Location = new System.Drawing.Point(96, 1);
+            this.label_PosY.Name = "label_PosY";
+            this.label_PosY.Size = new System.Drawing.Size(45, 19);
+            this.label_PosY.TabIndex = 29;
+            this.label_PosY.Text = "9999";
+            // 
+            // button_SetPosTo_0x1
+            // 
+            this.button_SetPosTo_0x1.Font = new System.Drawing.Font("Consolas", 10F);
+            this.button_SetPosTo_0x1.Location = new System.Drawing.Point(137, -1);
+            this.button_SetPosTo_0x1.Name = "button_SetPosTo_0x1";
+            this.button_SetPosTo_0x1.Size = new System.Drawing.Size(41, 24);
+            this.button_SetPosTo_0x1.TabIndex = 32;
+            this.button_SetPosTo_0x1.Text = "0x1";
+            this.button_SetPosTo_0x1.UseVisualStyleBackColor = true;
+            this.button_SetPosTo_0x1.Click += new System.EventHandler(this.button_SetPosTo_0x1_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -559,6 +612,10 @@
         private System.Windows.Forms.NumericUpDown numericUpDown_AutoXXXX_p;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button button_LoadProfile;
+        private System.Windows.Forms.Label label_Pos;
+        private System.Windows.Forms.Label label_PosY;
+        private System.Windows.Forms.Label label_PosX;
+        private System.Windows.Forms.Button button_SetPosTo_0x1;
     }
 }
 

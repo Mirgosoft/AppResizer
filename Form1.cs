@@ -63,9 +63,18 @@ namespace AppResizer
         Dictionary<string, AppsData> SavedAppsData = new Dictionary<string, AppsData>();
         public class AppsData
         {
+            public int startingPosX = 0;
+            public int startingPosY = 0;
             public int startingWidth = 0;
             public int startingHeight = 0;
             public int delayStartingResize = 0;
+        }
+
+        public static class LastAppData {
+            public static int posX = 0;
+            public static int posY = 0;
+            public static int width = 0;
+            public static int height = 0;
         }
         
         Thread Tread_Update;
@@ -190,14 +199,20 @@ namespace AppResizer
                         // If time to Starting resize come
                         SetWindowSize(CurrentProcess.MainWindowHandle,
                             SavedAppsData[currProcInfo].startingWidth,
-                            SavedAppsData[currProcInfo].startingHeight);
-
+                            SavedAppsData[currProcInfo].startingHeight,
+                            SavedAppsData[currProcInfo].startingPosX,
+                            SavedAppsData[currProcInfo].startingPosY);
+                        
                         // Update sizes in programm also, if window currently selected
                         if (lastSelectedWindowNode > -1 && lastSelectedWindowNode < ProcList.Length
                             && !ProcList[lastSelectedWindowNode].HasExited
                             && GetProcInfo(ProcList[lastSelectedWindowNode]) == currProcInfo)
                         {
                             Invoke(new Action(() => {
+                                label_PosX.Text = SavedAppsData[currProcInfo].startingPosX.ToString();
+                                label_PosY.Text = SavedAppsData[currProcInfo].startingPosY.ToString();
+                                label_SizeW.Text = SavedAppsData[currProcInfo].startingWidth.ToString();
+                                label_SizeH.Text = SavedAppsData[currProcInfo].startingHeight.ToString();
                                 numericUpDown_ResolutionW.Value = SavedAppsData[currProcInfo].startingWidth;
                                 numericUpDown_ResolutionH.Value = SavedAppsData[currProcInfo].startingHeight;
                             }));
@@ -214,10 +229,16 @@ namespace AppResizer
                         && GetProcInfo(ProcList[lastSelectedWindowNode]) == currProcInfo) {
                     WndSizes wndSizes = new WndSizes();
                     GetWndSizes(CurrentProcess.MainWindowHandle, ref wndSizes);
-                    Invoke(new Action(() => {
-                        label_SizeW.Text = wndSizes.Res_W.ToString();
-                        label_SizeH.Text = wndSizes.Res_H.ToString();
-                    }));
+                    // Update visually only if pos/sizes changed.
+                    if (LastAppData.posX != wndSizes.X || LastAppData.posY != wndSizes.Y
+                        || LastAppData.width != wndSizes.Res_W || LastAppData.height != wndSizes.Res_H
+                        )
+                        Invoke(new Action(() => {
+                            label_PosX.Text = wndSizes.X.ToString();
+                            label_PosY.Text = wndSizes.Y.ToString();
+                            label_SizeW.Text = wndSizes.Res_W.ToString();
+                            label_SizeH.Text = wndSizes.Res_H.ToString();
+                        }));
                 }
             }
         }
@@ -335,6 +356,8 @@ namespace AppResizer
                         string path = GetParamFromLineINI(line, "path");
                         string procName = GetParamFromLineINI(line, "procName");
                         string wndTitle = GetParamFromLineINI(line, "wndTitle");
+                        string startingPosX = Regex.Match(GetParamFromLineINI(line, "pos"), @"(\d+)x").Groups[1].Value;
+                        string startingPosY = Regex.Match(GetParamFromLineINI(line, "pos"), @"x(\d+)").Groups[1].Value;
                         string startingWidth = Regex.Match(GetParamFromLineINI(line, "resolution"), @"(\d+)x").Groups[1].Value;
                         string startingHeight = Regex.Match(GetParamFromLineINI(line, "resolution"), @"x(\d+)").Groups[1].Value;
                         string delayStartingResize = GetParamFromLineINI(line, "delayStartingResize");
@@ -344,9 +367,11 @@ namespace AppResizer
                                 SavedAppsData[procInfo] = new AppsData();
                             else
                                 SavedAppsData.Add(procInfo, new AppsData());
-                            SavedAppsData[procInfo].startingWidth          = int.Parse(startingWidth);
-                            SavedAppsData[procInfo].startingHeight         = int.Parse(startingHeight);
-                            SavedAppsData[procInfo].delayStartingResize    = int.Parse(delayStartingResize);
+                            SavedAppsData[procInfo].startingPosX            = int.Parse(startingPosX);
+                            SavedAppsData[procInfo].startingPosY            = int.Parse(startingPosY);
+                            SavedAppsData[procInfo].startingWidth           = int.Parse(startingWidth);
+                            SavedAppsData[procInfo].startingHeight          = int.Parse(startingHeight);
+                            SavedAppsData[procInfo].delayStartingResize     = int.Parse(delayStartingResize);
                         }
                     }
                     file.Close();
@@ -389,13 +414,21 @@ namespace AppResizer
             wnd_sizes.border_Top = wnd_sizes.Frame_H - (wnd_sizes.Res_H + wnd_sizes.border_Bot);
         }
         
-        private void SetWindowSize(IntPtr window_handle, int resolution_W, int resolution_H) {
+        private void SetWindowSize(IntPtr window_handle, int resolution_W = -1, int resolution_H = -1, int pos_X = -999, int pos_Y = -999) {
             // Current Rect info
             WndSizes wndSizes = new WndSizes();
             GetWndSizes(window_handle, ref wndSizes);
-            MoveWindow(window_handle, wndSizes.X, wndSizes.Y, 
-                (resolution_W + wndSizes.border_Left + wndSizes.border_Right),
-                (resolution_H + wndSizes.border_Top + wndSizes.border_Bot), true);
+            pos_X = pos_X == -999 ? wndSizes.X : pos_X;
+            pos_Y = pos_Y == -999 ? wndSizes.Y : pos_Y;
+            resolution_W = resolution_W < 1 ? wndSizes.Res_W : resolution_W;
+            resolution_H = resolution_H < 1 ? wndSizes.Res_H : resolution_H;
+            resolution_W += wndSizes.border_Left + wndSizes.border_Right;
+            resolution_H += wndSizes.border_Top + wndSizes.border_Bot;
+            MoveWindow(window_handle, pos_X, pos_Y, resolution_W, resolution_H, true);
+            LastAppData.posX = pos_X;
+            LastAppData.posY = pos_Y;
+            LastAppData.width = resolution_W;
+            LastAppData.height = resolution_H;
         }
         
         
@@ -452,16 +485,19 @@ namespace AppResizer
             WndSizes wndSizes = new WndSizes();
             GetWndSizes(currProc.MainWindowHandle, ref wndSizes);
 
+            int total_X = wndSizes.X;
+            int total_Y = wndSizes.Y;
             int total_W = wndSizes.Res_W;
             int total_H = wndSizes.Res_H;
             if (total_W < 0) total_W = 0;
             if (total_H < 0) total_H = 0;
-                
+
+            label_PosX.Text = total_X.ToString();
+            label_PosY.Text = total_Y.ToString();
             label_SizeW.Text = total_W.ToString();
             label_SizeH.Text = total_H.ToString();
             numericUpDown_ResolutionW.Value = total_W;
             numericUpDown_ResolutionH.Value = total_H;
-            
         }
 
         private void button_SaveProfile_Click(object sender, EventArgs e)
@@ -493,6 +529,7 @@ namespace AppResizer
             }
 
             string resultProfileText = "♿ path: " + proc_path + " ♿ procName: " + ProcList[selIndex].ProcessName + " ♿ wndTitle: " + ProcList[selIndex].MainWindowTitle +
+                " ♿ pos: " + int.Parse(label_PosX.Text) + "x" + int.Parse(label_PosY.Text) +
                 " ♿ resolution: " + int.Parse(label_SizeW.Text) + "x"+ int.Parse(label_SizeH.Text) +
                 " ♿ delayStartingResize: " + Math.Round(numericUpDown_DelayStartResize.Value * 1000) + " ♿";
             
@@ -529,6 +566,8 @@ namespace AppResizer
                 // Save to the current memory also
                 if (!SavedAppsData.ContainsKey(profileFileInfo))
                     SavedAppsData.Add(profileFileInfo, new AppsData());
+                SavedAppsData[profileFileInfo].startingPosX =           int.Parse(label_PosX.Text);
+                SavedAppsData[profileFileInfo].startingPosY =           int.Parse(label_PosY.Text);
                 SavedAppsData[profileFileInfo].startingWidth =          int.Parse(label_SizeW.Text);
                 SavedAppsData[profileFileInfo].startingHeight =         int.Parse(label_SizeH.Text);
                 SavedAppsData[profileFileInfo].delayStartingResize =    (int)(numericUpDown_DelayStartResize.Value * 1000);
@@ -783,12 +822,42 @@ namespace AppResizer
 
             SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle,
                             SavedAppsData[currProcInfo].startingWidth,
-                            SavedAppsData[currProcInfo].startingHeight);
+                            SavedAppsData[currProcInfo].startingHeight,
+                            SavedAppsData[currProcInfo].startingPosX,
+                            SavedAppsData[currProcInfo].startingPosY);
+            
+            label_PosX.Text = SavedAppsData[currProcInfo].startingPosX.ToString();
+            label_PosY.Text = SavedAppsData[currProcInfo].startingPosY.ToString();
+            label_SizeW.Text = SavedAppsData[currProcInfo].startingWidth.ToString();
+            label_SizeH.Text = SavedAppsData[currProcInfo].startingHeight.ToString();
         }
 
         private void Form1_Activated(object sender, EventArgs e)
         { UpdateProcessList(); }
 
-        
+        private void button_SetPosTo_0x1_Click(object sender, EventArgs e) {
+            if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length) {
+                MessageBox.Show("Window not selected", "Error"); return;
+            }
+            if (ProcList[lastSelectedWindowNode].HasExited) {
+                MessageBox.Show("Process not exists anymore!\n\rRefresh wondow's list and try again", "Error"); return;
+            }
+            string currProcInfo = GetProcInfo(ProcList[lastSelectedWindowNode]);
+
+            if (!SavedAppsData.ContainsKey(currProcInfo)) {
+                MessageBox.Show("Process doesn't have a Saved Profile!", "Error"); return;
+            }
+            // Calculate PosX and PosY without borders
+            WndSizes wndSizes = new WndSizes();
+            GetWndSizes(ProcList[lastSelectedWindowNode].MainWindowHandle, ref wndSizes);
+            int result_PosX = -wndSizes.border_Left;
+            int result_PosY = 1 - wndSizes.border_Top;
+
+            SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, -1, -1,
+                result_PosX, result_PosY);
+
+            label_PosX.Text = result_PosX.ToString();
+            label_PosY.Text = result_PosY.ToString();
+        }
     }
 }
