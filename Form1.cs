@@ -356,10 +356,10 @@ namespace AppResizer
                         string path = GetParamFromLineINI(line, "path");
                         string procName = GetParamFromLineINI(line, "procName");
                         string wndTitle = GetParamFromLineINI(line, "wndTitle");
-                        string startingPosX = Regex.Match(GetParamFromLineINI(line, "pos"), @"(\d+)x").Groups[1].Value;
-                        string startingPosY = Regex.Match(GetParamFromLineINI(line, "pos"), @"x(\d+)").Groups[1].Value;
-                        string startingWidth = Regex.Match(GetParamFromLineINI(line, "resolution"), @"(\d+)x").Groups[1].Value;
-                        string startingHeight = Regex.Match(GetParamFromLineINI(line, "resolution"), @"x(\d+)").Groups[1].Value;
+                        string startingPosX = Regex.Match(GetParamFromLineINI(line, "pos"), @"(-?\d+)x").Groups[1].Value;
+                        string startingPosY = Regex.Match(GetParamFromLineINI(line, "pos"), @"x(-?\d+)").Groups[1].Value;
+                        string startingWidth = Regex.Match(GetParamFromLineINI(line, "resolution"), @"(-?\d+)x").Groups[1].Value;
+                        string startingHeight = Regex.Match(GetParamFromLineINI(line, "resolution"), @"x(-?\d+)").Groups[1].Value;
                         string delayStartingResize = GetParamFromLineINI(line, "delayStartingResize");
                         if (path != null && procName != null && wndTitle != null) {
                             string procInfo = "path: '" + path + "', procName: '" + procName + "', wndTitle: '" + wndTitle + "'";
