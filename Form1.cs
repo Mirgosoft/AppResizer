@@ -303,7 +303,7 @@ namespace AppResizer
                 string path = GetParamFromLineINI(lines[i], "path");
 
                 // Verify, if Profile's game file exists...
-                if (path != null && path != "" && File.Exists(path))
+                if (path != null && (path == "" || File.Exists(path)))
                     resultLines_List.Add(lines[i]);
                 // If file not exists - not add his data line.
             }
