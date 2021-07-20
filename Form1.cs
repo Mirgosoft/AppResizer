@@ -843,10 +843,7 @@ namespace AppResizer
                 MessageBox.Show("Process not exists anymore!\n\rRefresh wondow's list and try again", "Error"); return;
             }
             string currProcInfo = GetProcInfo(ProcList[lastSelectedWindowNode]);
-
-            if (!SavedAppsData.ContainsKey(currProcInfo)) {
-                MessageBox.Show("Process doesn't have a Saved Profile!", "Error"); return;
-            }
+            
             // Calculate PosX and PosY without borders
             WndSizes wndSizes = new WndSizes();
             GetWndSizes(ProcList[lastSelectedWindowNode].MainWindowHandle, ref wndSizes);
