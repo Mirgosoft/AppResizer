@@ -620,10 +620,11 @@ namespace AppResizer
                 File.WriteAllText("applications.ini", "");
                 using (StreamWriter fileWriter = new StreamWriter("applications.ini"))
                 {
-                    for (int i = 0; i < lines.Length; i++) {
-                        if (!lines[i].Contains("'" + proc_path + "'") &&
-                            !lines[i].Contains("procName: '" + ProcList[selIndex].ProcessName + "'") &&
-                            !lines[i].Contains("wndTitle: '" + ProcList[selIndex].MainWindowTitle + "'")
+                    for (int i = 0; i < lines.Length; i++)
+                    {
+                        if (!lines[i].Contains(proc_path) &&
+                            !lines[i].Contains("procName: " + ProcList[selIndex].ProcessName) &&
+                            !lines[i].Contains("wndTitle: " + ProcList[selIndex].MainWindowTitle)
                             )
                             fileWriter.WriteLine(lines[i]);
                     }
@@ -636,7 +637,7 @@ namespace AppResizer
                     SavedAppsData.Remove(profileFileInfo);
 
                 // No need in correcting size of selected window
-                ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = false;
+                ProcAdditionalDataList[ProcList[selIndex].MainWindowHandle].alreadyStarted = true;
                 label_HaveProfile.Visible = false;
                 button_RemoveProfile.Visible = false;
                 button_LoadProfile.Visible = false;
