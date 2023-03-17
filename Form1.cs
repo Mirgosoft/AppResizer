@@ -414,7 +414,9 @@ namespace AppResizer
             wnd_sizes.border_Top = wnd_sizes.Frame_H - (wnd_sizes.Res_H + wnd_sizes.border_Bot);
         }
         
-        private void SetWindowSize(IntPtr window_handle, int resolution_W = -1, int resolution_H = -1, int pos_X = -999, int pos_Y = -999) {
+        private void SetWindowSize(IntPtr window_handle, int resolution_W = -1, int resolution_H = -1, 
+            int pos_X = -999, int pos_Y = -999, bool proper_placement = false)
+        {
             // Current Rect info
             WndSizes wndSizes = new WndSizes();
             GetWndSizes(window_handle, ref wndSizes);
@@ -424,6 +426,31 @@ namespace AppResizer
             resolution_H = resolution_H < 1 ? wndSizes.Res_H : resolution_H;
             resolution_W += wndSizes.border_Left + wndSizes.border_Right;
             resolution_H += wndSizes.border_Top + wndSizes.border_Bot;
+
+            // If placement verifying is required.
+            if (proper_placement) {
+                // Max possible position.
+                int min_X = -wndSizes.border_Left;
+                int min_Y = 1 - wndSizes.border_Top;
+                int max_X = Screen.PrimaryScreen.Bounds.Right - 40;
+                int max_Y = Screen.PrimaryScreen.Bounds.Bottom - 20;
+
+                // If Window reach beyong Screen borders - move wnd inside the screen back.
+                if (pos_X + resolution_W > max_X) {
+                    int pos_X_diff = max_X - (pos_X + resolution_W);
+                    pos_X += pos_X_diff;
+                }
+                if (pos_Y + resolution_H > max_Y) {
+                    int pos_Y_diff = max_Y - (pos_Y + resolution_H);
+                    pos_Y += pos_Y_diff;
+                }
+                // If move to much high/left -> move to 0x1 coords on screen.
+                if (pos_X < min_X)
+                    pos_X = min_X;
+                if (pos_Y < min_Y)
+                    pos_Y = min_Y;
+            }
+
             MoveWindow(window_handle, pos_X, pos_Y, resolution_W, resolution_H, true);
             LastAppData.posX = pos_X;
             LastAppData.posY = pos_Y;
@@ -695,7 +722,7 @@ namespace AppResizer
             label_SizeW.Text = total_W.ToString();
             label_SizeH.Text = total_H.ToString();
             
-            SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H);
+            SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H, -999, -999, true);
         }
 
         // Возвращаемое значение должно быть по шаблону   "path: 'путь-до-файла-если-есть', procName: 'имя-процесса', wndTitle: 'заголовок-окна'"
@@ -738,17 +765,15 @@ namespace AppResizer
             label_SizeW.Text = total_W.ToString();
             label_SizeH.Text = total_H.ToString();
 
-            SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H);
+            SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H, -999, -999, true);
         }
 
         private void button_setXXXXp_Click(object sender, EventArgs e)
         {
-            if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length)
-            {
+            if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length) {
                 MessageBox.Show("Window not selected", "Error"); return;
             }
-            if (ProcList[lastSelectedWindowNode].HasExited)
-            {
+            if (ProcList[lastSelectedWindowNode].HasExited) {
                 MessageBox.Show("Process not exists anymore!\n\rRefresh wondow's list and try again", "Error"); return;
             }
 
@@ -773,8 +798,9 @@ namespace AppResizer
                 numericUpDown_ResolutionH.Value = total_H;
                 label_SizeW.Text = total_W.ToString();
                 label_SizeH.Text = total_H.ToString();
-
-                SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, total_W, total_H);
+                
+                SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, 
+                    total_W, total_H, -999, -999, true);
 
                 // MessageBox.Show("result size:" + total_W + "x" + total_H + " (multiply = " + mult_i + ")!", "Saccess.");
 
