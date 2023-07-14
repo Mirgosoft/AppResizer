@@ -796,11 +796,17 @@ namespace AppResizer
 
                 numericUpDown_ResolutionW.Value = total_W;
                 numericUpDown_ResolutionH.Value = total_H;
-                label_SizeW.Text = total_W.ToString();
-                label_SizeH.Text = total_H.ToString();
                 
                 SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, 
                     total_W, total_H, -999, -999, true);
+
+                // New window coords and sizes:
+                WndSizes wndSizes = new WndSizes();
+                GetWndSizes(ProcList[lastSelectedWindowNode].MainWindowHandle, ref wndSizes);
+                label_PosX.Text = wndSizes.X.ToString();
+                label_PosY.Text = wndSizes.Y.ToString();
+                label_SizeW.Text = wndSizes.Res_W.ToString();
+                label_SizeH.Text = wndSizes.Res_H.ToString();
 
                 // MessageBox.Show("result size:" + total_W + "x" + total_H + " (multiply = " + mult_i + ")!", "Saccess.");
 
