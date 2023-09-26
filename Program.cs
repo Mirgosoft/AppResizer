@@ -14,6 +14,16 @@ namespace AppResizer
         [STAThread]
         static void Main()
         {
+            // Если это приложение уже запущено, не загружаем его.
+            if (System.Diagnostics.Process.GetProcessesByName(
+                System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetEntryAssembly().Location)
+                ).Count() > 1)
+            {
+                Console.Beep(600, 300);
+                Console.Beep(400, 200);
+                MessageBox.Show("Application is already running.", "AppResizer");
+                return;
+            }
             // Detect Errors
             AppDomain currentDomain = default(AppDomain);
             currentDomain = AppDomain.CurrentDomain;
