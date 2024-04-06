@@ -889,5 +889,23 @@ namespace AppResizer
             label_PosX.Text = result_PosX.ToString();
             label_PosY.Text = result_PosY.ToString();
         }
+
+        private void button_SetSizeTo1080p_Click(object sender, EventArgs e) {
+
+            if (lastSelectedWindowNode < 0 || lastSelectedWindowNode >= ProcList.Length) {
+                MessageBox.Show("Window not selected", "Error"); return;
+            }
+            if (ProcList[lastSelectedWindowNode].HasExited) {
+                MessageBox.Show("Process not exists anymore!\n\rRefresh wondow's list and try again", "Error"); return;
+            }
+
+            // Calculate PosX and PosY without borders
+            WndSizes wndSizes = new WndSizes();
+            GetWndSizes(ProcList[lastSelectedWindowNode].MainWindowHandle, ref wndSizes);
+            int result_PosX = -wndSizes.border_Left;
+            int result_PosY = 1 - wndSizes.border_Top;
+
+            SetWindowSize(ProcList[lastSelectedWindowNode].MainWindowHandle, 1920, 1080, result_PosX, result_PosY, true);
+        }
     }
 }

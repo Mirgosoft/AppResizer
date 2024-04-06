@@ -66,6 +66,7 @@
             this.toolStripMenuItem_Exit = new System.Windows.Forms.ToolStripMenuItem();
             this.button_RemoveProfile = new System.Windows.Forms.Button();
             this.checkBox_LaunchInTray = new System.Windows.Forms.CheckBox();
+            this.button_SetSizeTo1080p = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_Scale)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_ResolutionW)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown_ResolutionH)).BeginInit();
@@ -125,7 +126,7 @@
             // button_SaveProfile
             // 
             this.button_SaveProfile.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button_SaveProfile.Location = new System.Drawing.Point(322, 172);
+            this.button_SaveProfile.Location = new System.Drawing.Point(318, 177);
             this.button_SaveProfile.Name = "button_SaveProfile";
             this.button_SaveProfile.Size = new System.Drawing.Size(163, 37);
             this.button_SaveProfile.TabIndex = 7;
@@ -137,7 +138,7 @@
             // 
             this.label_Size.AutoSize = true;
             this.label_Size.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Size.Location = new System.Drawing.Point(13, 18);
+            this.label_Size.Location = new System.Drawing.Point(2, 23);
             this.label_Size.Name = "label_Size";
             this.label_Size.Size = new System.Drawing.Size(108, 19);
             this.label_Size.TabIndex = 16;
@@ -269,7 +270,7 @@
             this.label_SizeW.AutoSize = true;
             this.label_SizeW.BackColor = System.Drawing.Color.Transparent;
             this.label_SizeW.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_SizeW.Location = new System.Drawing.Point(62, 18);
+            this.label_SizeW.Location = new System.Drawing.Point(51, 23);
             this.label_SizeW.Name = "label_SizeW";
             this.label_SizeW.Size = new System.Drawing.Size(45, 19);
             this.label_SizeW.TabIndex = 25;
@@ -281,7 +282,7 @@
             this.label_SizeH.AutoSize = true;
             this.label_SizeH.BackColor = System.Drawing.Color.Transparent;
             this.label_SizeH.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_SizeH.Location = new System.Drawing.Point(117, 18);
+            this.label_SizeH.Location = new System.Drawing.Point(106, 23);
             this.label_SizeH.Name = "label_SizeH";
             this.label_SizeH.Size = new System.Drawing.Size(45, 19);
             this.label_SizeH.TabIndex = 26;
@@ -302,6 +303,7 @@
             // 
             this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(255)))), ((int)(((byte)(244)))));
             this.panel2.Controls.Add(this.button_SetPosTo_0x1);
+            this.panel2.Controls.Add(this.button_SetSizeTo1080p);
             this.panel2.Controls.Add(this.label_PosY);
             this.panel2.Controls.Add(this.label_PosX);
             this.panel2.Controls.Add(this.label_Pos);
@@ -316,7 +318,7 @@
             // button_SetPosTo_0x1
             // 
             this.button_SetPosTo_0x1.Font = new System.Drawing.Font("Consolas", 10F);
-            this.button_SetPosTo_0x1.Location = new System.Drawing.Point(137, -1);
+            this.button_SetPosTo_0x1.Location = new System.Drawing.Point(137, 0);
             this.button_SetPosTo_0x1.Name = "button_SetPosTo_0x1";
             this.button_SetPosTo_0x1.Size = new System.Drawing.Size(41, 24);
             this.button_SetPosTo_0x1.TabIndex = 32;
@@ -329,7 +331,7 @@
             this.label_PosY.AutoSize = true;
             this.label_PosY.BackColor = System.Drawing.Color.Transparent;
             this.label_PosY.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_PosY.Location = new System.Drawing.Point(96, 1);
+            this.label_PosY.Location = new System.Drawing.Point(96, 3);
             this.label_PosY.Name = "label_PosY";
             this.label_PosY.Size = new System.Drawing.Size(45, 19);
             this.label_PosY.TabIndex = 29;
@@ -340,7 +342,7 @@
             this.label_PosX.AutoSize = true;
             this.label_PosX.BackColor = System.Drawing.Color.Transparent;
             this.label_PosX.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_PosX.Location = new System.Drawing.Point(43, 1);
+            this.label_PosX.Location = new System.Drawing.Point(43, 3);
             this.label_PosX.Name = "label_PosX";
             this.label_PosX.Size = new System.Drawing.Size(45, 19);
             this.label_PosX.TabIndex = 28;
@@ -351,7 +353,7 @@
             // 
             this.label_Pos.AutoSize = true;
             this.label_Pos.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label_Pos.Location = new System.Drawing.Point(2, 1);
+            this.label_Pos.Location = new System.Drawing.Point(2, 3);
             this.label_Pos.Name = "label_Pos";
             this.label_Pos.Size = new System.Drawing.Size(99, 19);
             this.label_Pos.TabIndex = 27;
@@ -491,7 +493,7 @@
             this.label_HaveProfile.BackColor = System.Drawing.Color.Yellow;
             this.label_HaveProfile.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label_HaveProfile.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(190)))), ((int)(((byte)(22)))));
-            this.label_HaveProfile.Location = new System.Drawing.Point(328, 157);
+            this.label_HaveProfile.Location = new System.Drawing.Point(324, 163);
             this.label_HaveProfile.Name = "label_HaveProfile";
             this.label_HaveProfile.Size = new System.Drawing.Size(135, 19);
             this.label_HaveProfile.TabIndex = 37;
@@ -517,7 +519,7 @@
             // 
             this.button_RemoveProfile.BackColor = System.Drawing.Color.Red;
             this.button_RemoveProfile.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.button_RemoveProfile.Location = new System.Drawing.Point(461, 154);
+            this.button_RemoveProfile.Location = new System.Drawing.Point(457, 160);
             this.button_RemoveProfile.Name = "button_RemoveProfile";
             this.button_RemoveProfile.Size = new System.Drawing.Size(20, 24);
             this.button_RemoveProfile.TabIndex = 38;
@@ -536,6 +538,17 @@
             this.checkBox_LaunchInTray.TabIndex = 40;
             this.checkBox_LaunchInTray.Text = "Launch in Tray";
             this.checkBox_LaunchInTray.UseVisualStyleBackColor = true;
+            // 
+            // button_SetSizeTo1080p
+            // 
+            this.button_SetSizeTo1080p.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.button_SetSizeTo1080p.Location = new System.Drawing.Point(147, 23);
+            this.button_SetSizeTo1080p.Name = "button_SetSizeTo1080p";
+            this.button_SetSizeTo1080p.Size = new System.Drawing.Size(31, 22);
+            this.button_SetSizeTo1080p.TabIndex = 33;
+            this.button_SetSizeTo1080p.Text = "1k";
+            this.button_SetSizeTo1080p.UseVisualStyleBackColor = true;
+            this.button_SetSizeTo1080p.Click += new System.EventHandler(this.button_SetSizeTo1080p_Click);
             // 
             // Form1
             // 
@@ -616,6 +629,7 @@
         private System.Windows.Forms.Label label_PosY;
         private System.Windows.Forms.Label label_PosX;
         private System.Windows.Forms.Button button_SetPosTo_0x1;
+        private System.Windows.Forms.Button button_SetSizeTo1080p;
     }
 }
 
